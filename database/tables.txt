@@ -1,0 +1,96 @@
+CREATE TABLE READER (
+    id_reader SERIAL PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    pfp TEXT
+);
+
+CREATE TABLE AUTHOR (
+    id_author SERIAL PRIMARY KEY, 
+    name TEXT NOT NULL,
+    picture TEXT,
+    born TEXT,
+    died TEXT,
+    description TEXT
+);
+
+CREATE TABLE BOOK (
+    id_book SERIAL PRIMARY KEY,
+    cover_art TEXT,
+    title TEXT NOT NULL,
+    description TEXT,
+    no_pages INTEGER,
+    publishing_date TEXT,
+    id_author INTEGER NOT NULL,
+    CONSTRAINT fk_book_author
+        FOREIGN KEY (id_author)
+        REFERENCES AUTHOR(id_author)
+        ON DELETE RESTRICT
+);
+
+CREATE TABLE GENRE (
+    id_genre SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE LIST (
+    id_list SERIAL PRIMARY KEY,
+    id_reader INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    CONSTRAINT fk_list_owner
+        FOREIGN KEY (id_reader)
+        REFERENCES READER(id_reader)
+        ON DELETE CASCADE,
+    CONSTRAINT unique_list_per_user
+        UNIQUE (id_reader, name)
+);
+
+CREATE TABLE BOOK_GENRES (
+    id_book INTEGER NOT NULL,
+    id_genre INTEGER NOT NULL,
+    PRIMARY KEY (id_book, id_genre),
+    CONSTRAINT fk_bg_book
+        FOREIGN KEY (id_book)
+        REFERENCES BOOK(id_book)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_bg_genre
+        FOREIGN KEY (id_genre)
+        REFERENCES GENRE(id_genre)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE LIST_BOOKS (
+    id_list INTEGER NOT NULL,
+    id_book INTEGER NOT NULL,
+    PRIMARY KEY (id_list, id_book),
+    CONSTRAINT fk_lb_list
+        FOREIGN KEY (id_list)
+        REFERENCES LIST(id_list)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_lb_book
+        FOREIGN KEY (id_book)
+        REFERENCES BOOK(id_book)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE REVIEW (
+    id_reader INTEGER NOT NULL,
+    id_book INTEGER NOT NULL,
+    score INTEGER CHECK (score BETWEEN 1 AND 5),
+    description TEXT,
+    PRIMARY KEY (id_reader, id_book),
+    CONSTRAINT fk_review_user
+        FOREIGN KEY (id_reader)
+        REFERENCES READER(id_reader)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_review_book
+        FOREIGN KEY (id_book)
+        REFERENCES BOOK(id_book)
+        ON DELETE CASCADE
+);
+
+COPY author FROM 'your_path_here/goodreadData/author.csv' WITH (FORMAT CSV);
+COPY book FROM 'your_path_here/goodreadData/book.csv' WITH (FORMAT CSV);
+COPY genre FROM 'your_path_here/goodreadData/genre.csv' WITH (FORMAT CSV);
+COPY book_genres FROM 'your_path_here/goodreadData/book_genres.csv' WITH (FORMAT CSV);
+INSERT INTO READER (id_reader, username, password, pfp) VALUES (8888, 'admin', '1234', NULL);
