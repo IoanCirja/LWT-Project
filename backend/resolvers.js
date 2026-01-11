@@ -27,17 +27,34 @@ export const resolvers = {
             return res.rows[0];
         },
 
-        books: async (_, { page, count }) => {
-            const totalRes = await query("SELECT COUNT(*) AS total FROM BOOK");
-            const total = parseInt(totalRes.rows[0].total, 10);
+        books: async (_, { page, count, id_authors }) => {
+            let whereClause = "";
+            let params = [];
 
+            if (id_authors && id_authors.length > 0) {
+
+                whereClause = "WHERE id_author = ANY($1::int[])";
+                params.push(id_authors);
+            }
+
+            const totalRes = await query(
+                `SELECT COUNT(*) AS total FROM BOOK ${whereClause}`,
+                params
+            );
+            const total = parseInt(totalRes.rows[0].total, 10);
             const total_pages = Math.ceil(total / count);
 
             const offset = (page - 1) * count;
+            
+
+            const countIdx = params.length + 1;
+            const offsetIdx = params.length + 2;
+            
+            const finalParams = [...params, count, offset];
 
             const res = await query(
-                "SELECT * FROM BOOK ORDER BY id_book LIMIT $1 OFFSET $2",
-                [count, offset]
+                `SELECT * FROM BOOK ${whereClause} ORDER BY id_book LIMIT $${countIdx} OFFSET $${offsetIdx}`,
+                finalParams
             );
 
             return { total_pages, books: res.rows };
@@ -94,7 +111,13 @@ export const resolvers = {
             );
 
             return { total_pages, books: booksRes.rows };
-        }
+        },
+
+        user_reviews: async (_, { id_reader }) => {
+        const res = await query("SELECT * FROM REVIEW WHERE id_reader = $1", [id_reader]);
+        return res.rows;
+        },
+        
     },
 
     Mutation: {
@@ -203,7 +226,15 @@ export const resolvers = {
             );
 
             return res.rowCount > 0;
-        }
+        },
+
+        delete_review: async (_, { id_reader, id_book }) => {
+        const res = await query(
+            "DELETE FROM REVIEW WHERE id_reader = $1 AND id_book = $2",
+            [id_reader, id_book]
+        );
+        return res.rowCount > 0;
+    }
     },
 
     Reader: {

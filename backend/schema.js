@@ -57,10 +57,11 @@ export const typeDefs = `#graphql
     type Query {
         me(id_reader: ID!): Reader
         book(id_book: ID!): Book
-        books(page: Int!, count: Int!): PaginatedBooks!
+        books(page: Int!, count: Int!, id_authors: [ID]): PaginatedBooks!
         author(id_author: ID!): Author
         list(id_list: ID!): List
-        search_books(term: String!, page: Int!, count: Int!): PaginatedBooks!
+        search_books(term: String!, page: Int!, count: Int!, id_authors: [ID]): PaginatedBooks!
+        user_reviews(id_reader: ID!): [Review!]!
     }
 
     input BookInput {
@@ -90,5 +91,6 @@ export const typeDefs = `#graphql
         add_book(input: BookInput!, id_reader: ID!): Book!
         update_book(id_book: ID!, input: BookUpdateInput!, id_reader: ID!): Book
         delete_book(id_book: ID!, id_reader: ID!): Boolean
+        delete_review(id_reader: ID!, id_book: ID!): Boolean
     }
 `
