@@ -34,7 +34,7 @@ function LoginPage({ setUser }) {
   return (
     <div style={authContainerStyle}>
       <form onSubmit={handleSubmit} style={formStyle}>
-        <h2>📚 BookApp Login</h2>
+        <h2>Login</h2>
         <input
           style={inputStyle}
           placeholder="Username"
@@ -52,6 +52,15 @@ function LoginPage({ setUser }) {
         {error && (
           <p style={{ color: "red", marginTop: "10px" }}>{error.message}</p>
         )}
+                <p style={{ marginTop: "10px" }}>
+          Don't have an account?{" "}
+          <span
+            style={{ color: "#007bff", cursor: "pointer" }}
+            onClick={() => navigate("/signup")}
+          >
+            Register
+          </span>
+        </p>
       </form>
     </div>
   );

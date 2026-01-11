@@ -39,7 +39,7 @@ function SignupPage({ setUser }) {
   return (
     <div style={authContainerStyle}>
       <form onSubmit={handleSubmit} style={formStyle}>
-        <h2>📝 Create Account</h2>
+        <h2>Create Account</h2>
 
         <input
           style={inputStyle}

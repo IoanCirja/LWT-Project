@@ -19,15 +19,21 @@ export const REGISTER_MUTATION = gql`
 `;
 
 export const GET_BOOKS = gql`
-query GetBooks($page: Int!, $count: Int!, $id_authors: [ID]) {
+  query GetBooks($page: Int!, $count: Int!, $id_authors: [ID]) {
     books(page: $page, count: $count, id_authors: $id_authors) {
       total_pages
       books {
         id_book
         title
-        description
+        description        # Added
         cover_art
         avg_score
+        no_pages           # Added
+        publishing_date    # Added
+        genres {           # Added
+          id_genre
+          name
+        }
         reviews {
           score
           description
@@ -35,9 +41,41 @@ query GetBooks($page: Int!, $count: Int!, $id_authors: [ID]) {
             username
           }
         }
-        author { name 
+        author { 
+          name 
           id_author
-          }
+        }
+      }
+    }
+  }
+`;
+
+// Do the same for SEARCH_BOOKS
+export const SEARCH_BOOKS = gql`
+  query SearchBooks($term: String!, $page: Int!, $count: Int!, $id_authors: [ID]) {
+    search_books(term: $term, page: $page, count: $count, id_authors: $id_authors) {
+      total_pages
+      books {
+        id_book
+        title
+        description        
+        cover_art
+        avg_score
+        no_pages           
+        publishing_date    
+        genres {           
+          id_genre
+          name
+        }
+        reviews {
+          score
+          description
+          reader { username }
+        }
+        author { 
+          name
+          id_author
+        }
       }
     }
   }
@@ -133,28 +171,6 @@ export const DELETE_REVIEW_MUTATION = gql`
   }
 `;
 
-export const SEARCH_BOOKS = gql`
-  query SearchBooks($term: String!, $page: Int!, $count: Int!) {
-    search_books(term: $term, page: $page, count: $count) {
-      total_pages
-      books {
-        id_book
-        title
-        description
-        cover_art
-        avg_score
-        reviews {
-          score
-          description
-          reader { username }
-        }
-        author { name
-          id_author
-        }
-      }
-    }
-  }
-`;
 
 export const ADD_BOOK_MUTATION = gql`
   mutation AddBook($input: BookInput!, $id_reader: ID!) {

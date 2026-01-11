@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useMutation, useQuery } from "@apollo/client/react";
+import React, { useState, useEffect } from "react";
+import { useMutation, useQuery, useLazyQuery } from "@apollo/client/react";
 import {
   GET_BOOKS,
   GET_USER_LISTS,
@@ -7,6 +7,7 @@ import {
   REVIEW_BOOK_MUTATION,
   SEARCH_BOOKS,
   GET_AUTHORS,
+  GET_BOOK_DETAILS,
 } from "./mutations.js";
 import { useNavigate } from "react-router-dom";
 import BookDetailsModal from "./BookDetailsModal.jsx";
@@ -58,6 +59,15 @@ function BookExplorer({ user, setUser }) {
       { query: GET_USER_LISTS, variables: { id_reader: user.id_reader } },
     ],
   });
+
+  const [fetchBookDetails, { data: detailedData }] =
+    useLazyQuery(GET_BOOK_DETAILS);
+
+  useEffect(() => {
+    if (detailedData?.book) {
+      setSelectedBook(detailedData.book);
+    }
+  }, [detailedData]);
 
   const handleSearchClick = () => {
     setSearchQuery(inputText);
@@ -197,7 +207,7 @@ function BookExplorer({ user, setUser }) {
           fontSize: "2.2rem",
         }}
       >
-        {isSearching ? `Results for "${searchQuery}"` : "Available Books"}
+        {isSearching ? `Results for "${searchQuery}"` : ""}
       </h1>
 
       <div style={{ marginBottom: "30px", textAlign: "center" }}>
@@ -255,7 +265,9 @@ function BookExplorer({ user, setUser }) {
             <div
               key={book.id_book}
               style={rowStyle}
-              onClick={() => setSelectedBook(book)}
+              onClick={() =>
+                fetchBookDetails({ variables: { id_book: book.id_book } })
+              }
             >
               <img src={book.cover_art} alt="" style={thumbnailStyle} />
               <div style={{ flex: 1, textAlign: "left" }}>
@@ -295,29 +307,36 @@ function BookExplorer({ user, setUser }) {
                 >
                   Review
                 </button>
-<select
-  style={{ ...selectStyle, fontSize: "1.1rem", minWidth: "200px" }}
-  onChange={(e) => handleAdd(e.target.value, book.id_book, e)}
-  value={getBookListId(book.id_book)}
->
+                <select
+                  style={{
+                    ...selectStyle,
+                    fontSize: "1.1rem",
+                    minWidth: "200px",
+                  }}
+                  onChange={(e) => handleAdd(e.target.value, book.id_book, e)}
+                  value={getBookListId(book.id_book)}
+                >
+                  <option
+                    value=""
+                    disabled={getBookListId(book.id_book) !== ""}
+                  >
+                    {getBookListId(book.id_book) !== ""
+                      ? "✔ Added"
+                      : "Add to list..."}
+                  </option>
 
-  <option value="" disabled={getBookListId(book.id_book) !== ""}>
-    {getBookListId(book.id_book) !== "" ? "✔ Added" : "Add to list..."}
-  </option>
-
-
-  {!userData ? (
-    <option disabled>Loading your lists...</option>
-  ) : userData?.me?.lists?.length > 0 ? (
-    userData.me.lists.map((list) => (
-      <option key={list.id_list} value={list.id_list}>
-        {list.name}
-      </option>
-    ))
-  ) : (
-    <option disabled>No lists found (check user ID)</option>
-  )}
-</select>
+                  {!userData ? (
+                    <option disabled>Loading your lists...</option>
+                  ) : userData?.me?.lists?.length > 0 ? (
+                    userData.me.lists.map((list) => (
+                      <option key={list.id_list} value={list.id_list}>
+                        {list.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No lists found (check user ID)</option>
+                  )}
+                </select>
               </div>
             </div>
           ))
@@ -332,7 +351,6 @@ function BookExplorer({ user, setUser }) {
         book={selectedBook}
         onClose={() => setSelectedBook(null)}
       />
-
 
       {reviewModal && (
         <div style={modalOverlayStyle} onClick={() => setReviewModal(null)}>
@@ -475,7 +493,6 @@ function BookExplorer({ user, setUser }) {
     </div>
   );
 }
-
 
 const headerStyle = {
   display: "flex",
